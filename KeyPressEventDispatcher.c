@@ -7,20 +7,24 @@
 
 #include "KeyPressEventDispatcher.h"
 #include "queue.h"
+
 #include <pthread.h>
 
+//Todo fix header file situation; event.h shoudlnt be its own thing
 #define initialEvenCapacity 200
 /* Initlizes the event dispatcher*/
 void initDispatcher() {
     // event queue
     kpQueue * kpq = initQueue(initialEvenCapacity);
-    pthrea_t pt; // event listener thread
+    pthread_t pt; // event listener thread
 
     // passes to the thread create sys call
-    void (*worker) ();
-    worker = enqueueEvents; 
+   // void * (*worker) (void *);
+    //worker = enqueueEvents; 
 
-    pthread_create(&pt, NULL, worker, NULL);
+    pthread_create(&pt, NULL, enqueueEvents, NULL);
+
+    pthread_join(pt, NULL);
         
 }
 
@@ -28,11 +32,9 @@ void initDispatcher() {
    enqueues these presses as an event
 */
 void * enqueueEvents(void * arg) {
-
-    printf("This is working!");
+        
 }
 
-/*returns the next event*/
 int pollEvent(event * event);
 
 /*Terminates the dispatcher*/

@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "queue.h"
-#include "KeyPressEventDispatcher.h"
 
 /*Takes in an initial capacity
   Returns a pointer to an initlized kpQueue
@@ -20,7 +19,7 @@ kpQueue *initQueue(int cap) {
 }
 
 void destroyQueue(kpQueue * kpq) {
-    free(kpt->con);
+    free(kpq->con);
     free(kpq);
 }
 
