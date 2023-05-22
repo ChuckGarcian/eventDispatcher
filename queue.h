@@ -19,4 +19,7 @@ void destroyQueue(kpQueue * kpq);
 
 /*Takes in a kpQueue and resizes it*/
 void resize(kpQueue * kpq);
+
+/*Debug function for printing; Prints to queueDebugLog.txt*/
+void print(kpQueue *kpq);
 #endif // QUEUE_H

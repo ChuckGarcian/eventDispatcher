@@ -19,8 +19,9 @@
 kpQueue *kpq;
 char tc;                   // terminating character
 struct termios newt, oldt; // to change/save line displcine
+pthread_t pt; // event listener thread
 
-enum evenType escapeChar();
+enum eventType escapeChar();
 
 /* Initlizes the event dispatcher;
 Takes a char that when pressed terminates this proccess*/
@@ -35,24 +36,36 @@ void initDispatcher(char terminatingCharacter) {
 
   // event queue
   kpq = initQueue(initialEventCapacity);
-  pthread_t pt; // event listener thread
+  if (kpq == NULL) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    exit(1);
+  }
 
   pthread_create(&pt, NULL, enqueueEvents, NULL);
+  return;
 }
 
+FILE *file;
 /*'listens'/reads keypresses that are written to stdin
    enqueues these presses as an event
 */
-void *enqueueEvents(void *arg) {
+void * enqueueEvents(void *arg) {
     event eventToEnque; // This is the event to be enequed
-
-    setbuf(stdout, NULL); // delete
+    file = fopen("evenLog.txt", "w");
+    setbuf(file, NULL); // delete
 
     char c;
+
     while (1) {
+        if (kpq->de_stat == INVALID) continue;
         read(STDIN_FILENO, &c, 1);
-        if (c == tc)
-        terminateDispatcher();
+        fprintf(file, "%c", c);
+
+        if (c == tc) {
+            tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+            return NULL;
+        }
+
         switch (c) {
             case '\033': // Control escape sequences; IE arrows
                 eventToEnque.eventType = escapeChar();
@@ -66,8 +79,12 @@ void *enqueueEvents(void *arg) {
                 break;
         }
 
+        kpq->en_stat = INVALID; //To prevent race conditions; main thread may not deque while invalid
+
         // now enque the new keypress event
         enqueue(kpq, eventToEnque);
+
+        kpq->en_stat = VALID;
     };
 }
 
@@ -75,12 +92,14 @@ void *enqueueEvents(void *arg) {
   event; Returns 0 if no events are queued
 */
 int pollEvent(event *event) {
-    // No events queued right now
-    if (kpq->size == 0) {
+    // No events queued right now or invalid
+    if (kpq->size == 0 || kpq->en_stat == INVALID) { 
+        event = NULL;
         return 0;
     }
 
     *event = dequeue(kpq);
+    return 1;
 }
 
 /*Terminates the dispatcher*/
@@ -90,7 +109,7 @@ void terminateDispatcher() {
   exit(0);
 }
 
-enum evenType escapeChar() {            
+enum eventType escapeChar() {            
     char c;
 
     read(STDIN_FILENO, &c, 1); // To get rid of the '['
@@ -112,5 +131,4 @@ enum evenType escapeChar() {
         default:
             break;
     }
-    return;
 }
