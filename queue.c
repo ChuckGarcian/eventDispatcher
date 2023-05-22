@@ -15,15 +15,19 @@ kpQueue *initQueue(int cap) {
   res->con = malloc(sizeof(event) * cap); // Allocate room for the internal container
   res->capacity = cap;
   res->indexOfFirst = 0;
-  res->indexOfLast = 0;
+  res->indexOfLast = -1;
   res->size = 0;
 
-  event v = {v.eventType = 1, v.kp = 'l'};
+  
 
 
 
   f = fopen("queDebugLog.txt", "w");
+// It is suposes to print this event.kp field but it prints \0
+  event v = {.eventType = 1, .kp = 'l'}; // named fields
+
   setbuf(f, NULL);
+ // printf("hello world!\n");
   
   enqueue(res, v);
   dequeue(res);
