@@ -6,8 +6,12 @@
 
 int main (void) {
     //printf("Helo world!\n");
-    initDispatcher();
-
+    initDispatcher('q');
     
+    // event event;
+
+    // while(pollEvent(&event)) {
+
+    // }    
 
 }

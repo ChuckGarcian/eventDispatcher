@@ -15,6 +15,8 @@ kpQueue * initQueue(int cap);
 void enqueue(kpQueue * kpq, event val);
 
 event dequeue(kpQueue * kpq);
+void destroyQueue(kpQueue * kpq);
+
 /*Takes in a kpQueue and resizes it*/
 void resize(kpQueue * kpq);
 #endif // QUEUE_H

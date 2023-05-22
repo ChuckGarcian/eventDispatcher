@@ -3,7 +3,7 @@
 #ifndef KPD_H
 #define KPD_H
 /* Initlizes the event dispatcher*/
-void initDispatcher();
+void initDispatcher(char terminatingCharacter);
 
 /*'listens'/reads keypresses that are written to stdin
    enqueues these presses as an event
