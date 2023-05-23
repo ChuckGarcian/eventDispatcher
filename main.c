@@ -6,22 +6,22 @@
 #include <unistd.h>
 
 int main (void) {
-    printf("Starting!!\n");
     initDispatcher('q');
-      
-
-    printf("ENDING\n");
-
-    // terminateDispatcher();
-    event event;
-
+    event event; // struct that contains key event info
     while(1) {
         if (pollEvent(&event) == 1) {
-            char c = event.kp;
-            if (c == 'b') {
-                exit(0);
+            char c = event.kp; // char that was pressed
+            switch (event.eventType)
+            {
+            case QUIT_SEQUENCE:
+                terminateDispatcher();
+                exit(1);
+                break;
+            case NON_CONTROL:
+                printf("%c", c);
+                write(STDOUT_FILENO, &c, 1);
+                break;
             }
-            write(STDOUT_FILENO, &c, 1);
         }               
     }    
 

@@ -13,60 +13,71 @@
 #include "queue.h"
 
 #include <pthread.h>
-
+//#define DEBUG
 #define initialEventCapacity 200
 
 kpQueue *kpq;
 char tc;                   // terminating character
 struct termios newt, oldt; // to change/save line displcine
 pthread_t pt; // event listener thread
-event eventToEnque; // This is the event to be enequed
+FILE *file; // For debuging
 
 enum eventType escapeChar();
+void makeRaw();
 
 /* Initlizes the event dispatcher;
 Takes a char that when pressed terminates this proccess*/
 void initDispatcher(char terminatingCharacter) {
   tc = terminatingCharacter;
 
-    // event queue
+  // event queue
   kpq = initQueue(initialEventCapacity);
-  if (kpq == NULL) {
-    exit(1);
-  }
+  if (kpq == NULL) { exit(1); }
 
   // Puts in raw mode
-  tcgetattr(STDIN_FILENO, &oldt);
-  newt = oldt;
-  cfmakeraw(&newt);
-  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  makeRaw();
 
-
-
-  
   pthread_create(&pt, NULL, enqueueEvents, NULL);
   return;
 }
 
-FILE *file;
+/*Sets the line displine to raw*/
+void makeRaw() {
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    cfmakeraw(&newt);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+}
+
+
 /*'listens'/reads keypresses that are written to stdin
    enqueues these presses as an event
 */
 void * enqueueEvents(void *arg) {
-   
+    #ifdef DEBUG
     file = fopen("evenLog.txt", "w");
-    
     setbuf(file, NULL); // delete
-   
+    #endif
+
+    event eventToEnque; // This is the event to be enequed
     char c;
-    read(STDIN_FILENO, &c, 1);
-
-    while (1) {      
+    
+    //Every iteration we read in from stdin 1 byte
+    // we then proccess it and workout what kind of key press it was; then enqueded
+    // we look until the tc is pressed
+    while (c != tc) { 
+        read(STDIN_FILENO, &c, 1); 
+        #ifdef DEBUG
         fprintf(file, "%c", c);
-
+        #endif
+        
+        // user hit the terminating character; end this thread
         if (c == tc) {
-            tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-            return NULL;
+            eventToEnque.eventType = QUIT_SEQUENCE;
+            kpq->en_stat = EINVALID; 
+            enqueue(kpq, eventToEnque);
+            kpq->en_stat = EVALID;
+            continue;
         }
 
         switch (c) {
@@ -88,9 +99,9 @@ void * enqueueEvents(void *arg) {
         // now enque the new keypress event
         enqueue(kpq, eventToEnque);
         kpq->en_stat = EVALID;
-
-        read(STDIN_FILENO, &c, 1);
     };
+
+    return NULL;
 }
 
 /*takes a pointer to an event and makes it equal to the most recent
@@ -112,6 +123,7 @@ int pollEvent(event *event) {
 
 /*Terminates the dispatcher*/
 void terminateDispatcher() {
+  pthread_join(pt, NULL);
   destroyQueue(kpq);
   tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
   exit(0);

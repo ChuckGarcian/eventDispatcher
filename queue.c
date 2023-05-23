@@ -4,8 +4,9 @@
 
 #include "queue.h"
 
-
+//#define DEBUG
 FILE * f;
+
 /*Takes in an initial capacity
   Returns a pointer to an initlized kpQueue
 */
@@ -17,26 +18,17 @@ kpQueue *initQueue(int cap) {
   res->indexOfFirst = 0;
   res->indexOfLast = -1;
   res->size = 0;
-
   
-
-
-
+  #ifdef DEBUG
   f = fopen("queDebugLog.txt", "w");
-// It is suposes to print this event.kp field but it prints \0
-  event v = {.eventType = 1, .kp = 'l'}; // named fields
-
   setbuf(f, NULL);
- // printf("hello world!\n");
-  
-  enqueue(res, v);
-  dequeue(res);
-
   print(res);
+  #endif 
 
   return res;
 }
 
+/*Frees and destroys queue*/
 void destroyQueue(kpQueue * kpq) {
     free(kpq->con);
     free(kpq);
@@ -46,32 +38,41 @@ void destroyQueue(kpQueue * kpq) {
   The event is enqued
 */
 void enqueue(kpQueue *kpq, event val) {
+  // not enough capacity so we resize
   if (kpq->size == kpq->capacity) {
     resize(kpq);
   }
 
+  #ifdef DEBUG
   fprintf(f, "\n \nEnque Before: ");
   print(kpq);
+  #endif
 
-  // once capacity is available
+  // once capacity is available; mod makes it wrap arounds
   kpq->indexOfLast = (kpq->indexOfLast + 1) % kpq->capacity;
   kpq->size++;
   kpq->con[kpq->indexOfLast] = val;
 
+  #ifdef DEBUG
   fprintf(f, "\n Enque After: ");
-  print(kpq);  
+  print(kpq);
+  #endif  
 }
 
 event dequeue(kpQueue * kpq) {
+    #ifdef DEBUG
     fprintf(f, "\n \n Denque Before: ");
     print(kpq);
+    #endif
 
     kpq->size--;
     event res = kpq->con[kpq->indexOfFirst];
     kpq->indexOfFirst = (kpq->indexOfFirst + 1) % kpq->capacity;
 
+    #ifdef DEBUG
     fprintf(f, "\nDenque After: ");
     print(kpq);
+    #endif
 
     return res;
 }
@@ -79,7 +80,6 @@ event dequeue(kpQueue * kpq) {
 void resize(kpQueue *kpq) {
     // Create new container with apprioiprate capacity
     event * newCon = malloc(sizeof(event) * kpq->capacity * 2);
-    
     int oldConIndex = kpq->indexOfFirst;
 
     // Copy over from old container to new
@@ -95,6 +95,7 @@ void resize(kpQueue *kpq) {
     kpq->con = newCon;
 }
 
+#ifdef DEBUG
 /*Debug function for printing; Prints to queueDebugLog.txt*/
 void print(kpQueue *kpq) {
   int size = kpq->size;
@@ -102,12 +103,14 @@ void print(kpQueue *kpq) {
   int index = kpq->indexOfFirst; // Use to iterate through the queue without modifying indexFirst
 
   event curEvent;
+
   fprintf(f, "Queue ");
   fprintf(f, "Stats-> cap: %d, idxLast: %d, idxFirst: %d, size: %d \n", kpq->capacity, kpq->indexOfLast, kpq->indexOfFirst,  kpq->size);
-
+  
   for (int i = 0; i < size; i++) {   
     curEvent = kpq->con[index];
     index = (index + 1) % kpq->capacity;
     fprintf(f, "EType: %d, KP: %c \n", curEvent.eventType, curEvent.kp);
   }
 }
+#endif
