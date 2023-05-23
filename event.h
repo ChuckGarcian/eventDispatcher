@@ -9,6 +9,7 @@ enum eventType{
     LEFT_ARROW,
     BACKSPACE,
     DELETE,
+    ENTER,
     QUIT_SEQUENCE,
     NON_CONTROL,
 };

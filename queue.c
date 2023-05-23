@@ -5,7 +5,12 @@
 #include "queue.h"
 
 //#define DEBUG
-FILE * f;
+#ifdef DEBUG
+FILE *f;
+#endif
+
+/*Takes in a kpQueue and resizes it*/
+void Qresize(kpQueue * kpq);
 
 /*Takes in an initial capacity
   Returns a pointer to an initlized kpQueue
@@ -34,13 +39,15 @@ void destroyQueue(kpQueue * kpq) {
     free(kpq);
 }
 
+
+
 /*Takes a kpQueue and event struct
   The event is enqued
 */
 void enqueue(kpQueue *kpq, event val) {
   // not enough capacity so we resize
   if (kpq->size == kpq->capacity) {
-    resize(kpq);
+    Qresize(kpq);
   }
 
   #ifdef DEBUG
@@ -77,7 +84,7 @@ event dequeue(kpQueue * kpq) {
     return res;
 }
 
-void resize(kpQueue *kpq) {
+void Qresize(kpQueue *kpq) {
     // Create new container with apprioiprate capacity
     event * newCon = malloc(sizeof(event) * kpq->capacity * 2);
     int oldConIndex = kpq->indexOfFirst;

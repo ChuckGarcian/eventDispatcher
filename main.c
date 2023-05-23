@@ -5,6 +5,7 @@
 #include "queue.h"
 #include <unistd.h>
 
+#ifdef DEBUG
 int main (void) {
     initDispatcher('q');
     event event; // struct that contains key event info
@@ -26,3 +27,4 @@ int main (void) {
     }    
 
 }
+#endif
