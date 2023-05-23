@@ -27,6 +27,7 @@ FILE *file; // For debuging
 enum eventType escapeChar();
 void makeRaw();
 
+
 /* Initlizes the event dispatcher;
 Takes a char that when pressed terminates this proccess*/
 void initDispatcher(char terminatingCharacter) {
