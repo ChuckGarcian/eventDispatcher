@@ -12,6 +12,7 @@ enum eventType{
     ENTER,
     QUIT_SEQUENCE,
     NON_CONTROL,
+    END_OF_LINE,
 };
 
 // Contains eventype and the key pressed if any

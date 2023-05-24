@@ -89,14 +89,15 @@ void *enqueueEvents(void *arg) {
       break;
     case 127: // Back space
       eventToEnque.eventType = BACKSPACE;
-      break;
+      break; //TODO I need to make the below generalized it was a temperary fix for my shell;
     case '\r': // Enter key was pressed
       eventToEnque.eventType = ENTER;
       kpq->en_stat = EINVALID;
       enqueue(kpq, eventToEnque);
       kpq->en_stat = EVALID;
       return NULL;
-    //  eventToEnque.eventType = ENTER;
+    case '3': // end of line character; occurs when control + C is pressed; typically ends the current program
+      eventToEnque.eventType = END_OF_LINE;
       break;
     default:
       eventToEnque.eventType = NON_CONTROL;
